@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <arpa/inet.h>
-#define MAX 1024
+#define MAX 100
 #define PORT 12345
 
 int main()
@@ -20,14 +20,13 @@ int main()
     bind(sockfd, (struct sockaddr *)&server, sizeof(server));
     printf("Server listening...\n");
 
-    recvfrom(sockfd, buff, MAX, 0, (struct sockaddr *)&client, &len);
-
-    FILE *fptr;
-    fptr = fopen("mail.txt", "w");
-    fprintf(fptr, "%s", buff);
-    fclose(fptr);
-
-    printf("\nMail recieved and saved to mail.txt\n");
+    while (1)
+    {
+        recvfrom(sockfd, buff, MAX, 0, (struct sockaddr *)&client, &len);
+        printf("From client: %s\nTo client: ", buff);
+        fgets(buff, MAX, stdin);
+        sendto(sockfd, buff, MAX, 0, (struct sockaddr *)&client, len);
+    }
 
     close(sockfd);
 }

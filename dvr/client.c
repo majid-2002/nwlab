@@ -4,6 +4,7 @@ struct node
     unsigned dist[20];
     unsigned from[20];
 } rt[10];
+
 int main()
 {
     int costmat[20][20];
@@ -11,21 +12,20 @@ int main()
     printf("\nEnter the number of nodes: ");
     scanf("%d", &nodes);
     printf("\nEnter the cost matrix : \n");
+
     for (i = 0; i < nodes; i++)
     {
         for (j = 0; j < nodes; j++)
         {
             scanf("%d", &costmat[i][j]);
             costmat[i][i] = 0;
-            rt[i].dist[j] = costmat[i][j]; // initiate the distance equal to cost matrix
-            rt[i].from[j] = j;             // initiate the source node
+            rt[i].dist[j] = costmat[i][j];
+            rt[i].from[j] = j;
         }
     }
     do
     {
         count = 0;
-        // we choose an arbitrary vertex k and we calculate
-        // the direct distance from node i to k using cost matrix
         for (i = 0; i < nodes; i++)
         {
             for (j = 0; j < nodes; j++)
@@ -42,6 +42,7 @@ int main()
             }
         }
     } while (count != 0);
+
     for (i = 0; i < nodes; i++)
     {
         printf("\n\n For router %d\n", i + 1);

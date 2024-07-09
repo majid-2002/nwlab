@@ -1,93 +1,46 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#define MAX 80
-#define PORT 43454
-
-void func(int connfd)
-{
-    char buff[MAX];
-    int n;
-    for (;;)
-    {
-        bzero(buff, MAX);
-        read(connfd, buff, sizeof(buff));
-        printf("From client: %s\t To client: ", buff);
-        bzero(buff, MAX);
-        n = 0;
-        while ((buff[n++] = getchar()) != '\n')
-            ;
-        write(connfd, buff, sizeof(buff));
-        if (strncmp("exit", buff, 4) == 0)
-        {
-            printf("Server Exit...\n");
-            break;
-        }
-    }
-}
+#include <string.h>
+#define MAX 100
+#define PORT 12345
 
 int main()
 {
-    int sockfd, connfd, len;
     struct sockaddr_in server, client;
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1)
-    {
-        printf("Socket creation failed...\n");
-        exit(0);
-    }
-    else
-    {
-        printf("Socket successfully created..\n");
-    }
-
-    bzero(&server, sizeof(server));
+    socklen_t len = sizeof(client);
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    char buff[MAX];
 
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
     server.sin_port = htons(PORT);
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if ((bind(sockfd, (struct socketaddr *)&server, sizeof(server))) != 0)
-    {
-        printf("Socket bind failed...\n");
-        exit(0);
-    }
-    else
-    {
-        printf("Socket successfully binded..\n");
-    }
+    bind(sockfd, (struct sockaddr *)&server, sizeof(server));
+    listen(sockfd, 5);
 
-    if ((listen(sockfd, 5)) != 0)
-    {
-        printf("Listen failed...\n");
-        exit(0);
-    }
-    else
-    {
-        printf("Server listening..\n");
-    }
-    len = sizeof(client);
+    printf("Server listening...\n");
 
     while (1)
     {
-        connfd = accept(sockfd, (struct socketaddr *)&client, &len);
-        if (connfd < 0)
+        int connfd = accept(sockfd, (struct sockaddr *)&client, &len);
+
+        if (connfd != -1)
         {
-            printf("Server accept failed...\n");
-            exit(0);
-        }
-        else
-        {
-            printf("Server accepted the client...\n");
+            printf("Client accepted\n");
         }
 
         if (fork() == 0)
         {
             close(sockfd);
-            func(connfd);
+            while (1)
+            {
+                read(connfd, buff, MAX);
+                printf("From client: %s\nTo client: ", buff);
+                fgets(buff, MAX, stdin);
+                write(connfd, buff, MAX);
+            }
             close(connfd);
             exit(0);
         }
@@ -98,5 +51,4 @@ int main()
     }
 
     close(sockfd);
-    return 0;
 }

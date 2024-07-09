@@ -1,0 +1,6 @@
+CC:majid@123.com
+From:sampl@gamil.com
+Subject:hai
+Message:
+hello
+!

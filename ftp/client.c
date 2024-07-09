@@ -1,44 +1,33 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <arpa/inet.h>
-#define BUFSIZE 1024
-#define PORT_ADDR 6000
+#include <string.h>
+#define MAX 100
+#define PORT 12345
 
 int main()
 {
     struct sockaddr_in server;
-    int socket_d, file_d, char_count, file_length, i;
-    char buffer_1[BUFSIZE], buffer_2[BUFSIZE], pid_str[10];
+    socklen_t len = sizeof(server);
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    char buff[MAX];
 
-    socket_d = socket(AF_INET, SOCK_STREAM, 0);
     server.sin_family = AF_INET;
-    server.sin_port = htons(PORT_ADDR);
+    server.sin_port = htons(PORT);
     server.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    connect(socket_d, (struct sockaddr *)&server, sizeof(server));
+    connect(sockfd, (struct sockaddr *)&server, len);
 
-    printf("\nEnter the filename:\n");
-    char_count = read(0, buffer_1, sizeof(buffer_1));
-    buffer_1[char_count - 1] = '\0';
-
-    write(socket_d, buffer_1, char_count);
-    file_d = open(buffer_1, O_RDONLY);
-    file_length = read(file_d, buffer_2, sizeof(buffer_2));
-
-    if (file_d < 0)
-        printf("\nFile not found!");
-    else
+    while (1)
     {
-        printf("File length: %d\n", file_length);
-        printf("\nPrinting content of file:\n");
-        for (i = 0; i < file_length; i++)
-            printf("%c", buffer_2[i]);
-        printf("\n");
-        read(socket_d, pid_str, sizeof(pid_str));
-        printf("\nReceived process ID from server: %s\n", pid_str);
+        bzero(buff, MAX);
+        printf("To server: ");
+        fgets(buff, MAX, stdin);
+        write(sockfd, buff, MAX);
+        read(sockfd, buff, MAX);
+        printf("From server: %s\n", buff);
     }
-    close(socket_d);
 
-    return 0;
+    close(sockfd);
 }
